@@ -158,3 +158,19 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Data files are too big to store in GitHub
+/compare_less_down_direct.csv
+/direct_prep.csv
+/down_prep.csv
+/direct/WaterDataPA2024.xlsx
+/direct/direct_mercer_butler_water_data.csv
+/direct/direct_strict_data_notnull_df.csv
+/direct/direct_strict_data_null_subset_fields_df_f.csv
+/down/downprep_site_spi_bi_df.csv
+/down/downprep_site.csv
+/down/downprep_data.csv
+/down/d3_downprep_site.csv
+/down/d3_downprep_data.csv
+/down/down_mercer_water_data.csv
+

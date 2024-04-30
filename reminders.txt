@@ -1,0 +1,60 @@
+Reminders for Sandra
+
+Make a directory for the repo (D:\onedrive\repos>)
+
+If needed, install anaconda (https://www.anaconda.com/download/success)
+Downloaded and executed/installed Anaconda3-2024.02-1-Windows-x86_64.exe
+Opt to update anaconda if desired
+Go into the anaconda navigator and make sure "git" is an installed package to the env being used (base (root))
+
+Open an anaconda terminal (anaconda powershell)
+(base) PS D:\> cd onedrive
+(base) PS D:\onedrive> cd repos
+(base) PS D:\onedrive\repos>
+
+Make a repo in GitHub
+In the waterdata repo, click Code, then Clone, HTTPS, copy icon
+type in git clone, then add the repo
+(base) PS D:\onedrive\repos> git clone https://github.com/sandra444/waterdata.git
+(base) PS D:\onedrive\repos> cd waterdata
+(base) PS D:\onedrive\repos\waterdata>
+
+Make a file called reminders.txt and put these instructions in it
+
+(base) PS D:\onedrive\repos\waterdata> git config --global user.email "sandrakarcher44@gmail.com"
+(base) PS D:\onedrive\repos\waterdata> git config --global user.name "sandra444"
+
+(base) PS D:\onedrive\repos\waterdata> git checkout -b work20240429
+Switched to a new branch 'work20240429'
+(base) PS D:\onedrive\repos\waterdata> git status
+On branch work20240429
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .gitignore
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        compare.py
+        direct/
+        down/
+        reminders.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Also, when/if asked, add token. 
+(base) PS D:\onedrive\repos\waterdata> git add --all 
+(base) PS D:\onedrive\repos\waterdata> git status
+
+
+
+
+(base) C:\Users\sandr\Documents\sandra444\sandra444.github.io>git commit -m "Website 20240219"
+(base) C:\Users\sandr\Documents\sandra444\sandra444.github.io>git push -u origin topbar20240228 (then, in git hub, send pull request to main)
+
+
+
+
+Note: The -u is to --set-upstream (automatically link your local to your remote)
+Note: When using different GitHub users, windows saves credentials (settings, Windows Credentials). 
+May need to remove the git credentials and then, when try to push the next time, add back the correct one.
