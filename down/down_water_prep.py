@@ -33,17 +33,17 @@ Click Submit
 
 Routed to an html with a file for each year:
 Data Extraction: From 1JAN2014 to 31DEC2023
-YEAR	SAMPLE RECORDS
-2014	14854
-2015	16096
-2016	19471
-2017	19323
-2018	21966
-2019	25443
-2020	24738
-2021	25479
-2022	26370
-2023	25293
+YEAR	SAMPLE RECORDS (from running the code - print string)
+2014	15007
+2015	16452
+2016	20208
+2017	20130
+2018	22688
+2019	26118
+2020	24671  (on 2024-05-06 discovered that dates in this file were NOT 2020 - pdf file redownloaded)
+2021	25439  (on 2024-05-06 discovered that dates in this file were NOT 2021 - pdf file redownloaded)
+2022	26300  (on 2024-05-06 discovered that dates in this file were NOT 2022 - pdf file redownloaded)
+2023	25882
 
 Click on the year to download each yearly file. 
 Download for each Year into a pdf (the whole year as a csv was not an option)
@@ -146,6 +146,11 @@ There is an Excel export near the top, click it to get an .xlsx file of sites.
 
 File: ResultsSite.xlsx
 
+About Units, from Water Program Specialist PADWIS Section
+ALL data are reported in mg/L with the following exceptions:
+PFAS data are reported in ng/L
+Radiological data are reported in pCi/L
+
 '''
 
 import re
@@ -235,6 +240,7 @@ def main(args):
             # print('master_df after change spacer')
             # print(master_df.columns.tolist())
             # print(master_df)
+            print('filename', filename, ' | number sample rows:', len(master_df))
 
             save_file_prefix = filename[0: 11]
             filename2 = save_file_prefix + '.csv'  
@@ -312,7 +318,8 @@ def main(args):
         data_df.loc[data_df['Sample Type'] == 'DISTRIBUTIO N', 'Sample Type'] = 'DISTRIBUTION'     
         # data_df['SYSTEM NAME'] = data_df['SYSTEM NAME'].str.strip()
         data_df['SYSTEM NAME'] = data_df['SYSTEM NAME'].apply(lambda x: x.strip())
-
+        data_df['Sample Date'] = data_df['Sample Date'].apply(lambda x: re.sub(' ', '', x))
+    
         # RUN SOME CHECKS
         df1 = site_spi_bi_df[(site_spi_bi_df['CLIENT ID'] != site_spi_bi_df['CLIENT ID_y']) & (site_spi_bi_df['CLIENT ID_y'].notnull())]
         dfs1 = df1.shape[0]
@@ -391,8 +398,12 @@ def main(args):
                 'STATE_CODE',
                 'ZIP_CODE'
                 ]
-            
-            site_sub_df = site_spi_bi_df[fields_to_keep]      
+
+            site_sub_df = site_spi_bi_df[fields_to_keep]   
+            # add a field that can be used to get the Lat and Long in google sheets            
+            site_sub_df['Lat_Long_Address'] = 'x'
+            site_sub_df.loc[(site_spi_bi_df['ADDRESS2'].isnull()), 'Lat_Long_Address'] = site_sub_df['ADDRESS1'] + ', ' + site_sub_df['CITY'] + ', ' + site_sub_df['STATE_CODE'] + ', ' + site_sub_df['ZIP_CODE']
+            site_sub_df.loc[(site_spi_bi_df['ADDRESS2'].notnull()), 'Lat_Long_Address'] = site_sub_df['ADDRESS1'] + ' ' + site_sub_df['ADDRESS2'] + ', ' + site_sub_df['CITY'] + ', ' + site_sub_df['STATE_CODE'] + ', ' + site_sub_df['ZIP_CODE']
             print('site_sub_df\n', site_sub_df.columns.tolist(), '\n', site_sub_df.head(4))
             site_sub_df.to_csv(SITE_PREP, index=False)  
 
@@ -401,11 +412,16 @@ def main(args):
             print('DONE - BUT NOTE......') 
 
             print('\n\nIf want the Lat and Long, the easiest way is to get it NOW using google sheets. ')
-            print('Go to the down directory and get the file:', SITE_PREP)
-            print('and make a concatenated field of ADDRESS1 ADDRESS2 CITY STATE_CODE ZIP_CODE as a valid address (in X=S1& " " & T1 & ", "&U1&", " &V1& ", "&W1).')
-            print('In google drive, New google sheet. Extensions, Add-ons, Geocoding by SmartMonkey.')
-            print('Copy in the addess field and fill in the Country usa. Extensions, select Geocoding by SmartMonkey')
-            print('Copy the coordinates into the spread sheet then separate them into Latitude and Longitude (use test to columns)')
+            print('Go to the down directory and get the file:', SITE_PREP, ' and open it.')
+            # print('and make a concatenated field of ADDRESS1 ADDRESS2 CITY STATE_CODE ZIP_CODE as a valid address (in X=S1& " " & T1 & ", "&U1&", " &V1& ", "&W1).')
+            print('In google drive, New google sheet. Extensions, Add-ons, Geocoding by SmartMonkey, select a Create Template.')
+            print('Copy in the content of the Lat_long_Address field into Address and fill in the Country usa.')
+            print('Select the Address and Country column.')
+            print('Select Extensions, select Geocoding by SmartMonkey, select Geocode.')
+            print('Copy the coordinates into the ', SITE_PREP, ' spread sheet.')
+            # print('Separate them into Latitude and Longitude (use the test to columns)')
+            print('Try to find addresses and coordinates for any that are null.')
+
         else:
             print('Stopped because of mismatch of fields. You should have already gotten a message.')
 
@@ -445,16 +461,27 @@ def main(args):
         data_df.loc[(data_df['Sample Location'] == 'nan') | (data_df['Sample Location'] == 'NaN') | (data_df['Sample Location'] == ''), 'Sample Location'] = 'Y'  
         # one of the string transformations was adding a .0 (that I only found by NOT linking on Sample Location and seeing that it was 726.0 instead of 726)
         site_sub_df['Sample Location'] = site_sub_df['Sample Location'].apply(lambda x: x.replace('.0', ''))
+        # print('Separate them into Latitude and Longitude (use the test to columns)')
+        site_sub_df['Coordinates'] = site_sub_df['Coordinates'].astype(str)
+        site_sub_df['Latitude'] = site_sub_df['Coordinates'].apply(lambda x: x[:x.find(',')])
+        site_sub_df['Longitude'] = site_sub_df['Coordinates'].apply(lambda x: x[x.find(',')+1:])
         data_df['Sample Location'] = data_df['Sample Location'].apply(lambda x: x.replace('.0', ''))
         # there is an issue with some of the merges thinking Sample Location is an integer - preventative
         site_sub_df['Sample Location'] = site_sub_df['Sample Location'].apply(lambda x: 'n'+x)
         data_df['Sample Location'] = data_df['Sample Location'].apply(lambda x: 'n'+x)
 
+        # print('\nsite_sub_df.dtypes', site_sub_df.dtypes)
+
         site_sub_df.reset_index()    
         site_sub_df['PWSID'] = site_sub_df['PWSID'].astype(str)
         site_sub_df['PWSID'] = site_sub_df['PWSID'].apply(lambda x: x.strip())           
         site_sub_df['Sample Location'] = site_sub_df['Sample Location'].apply(lambda x: x.strip())
-        site_sub_df['SYSTEM NAME'] = site_sub_df['SYSTEM NAME'].astype(str)
+
+        # IF GET THIS, YOU ADDED EXTRA ROWS WHEN ADDING THE LAT/LONG GEOCODING 
+        # site_sub_df['SYSTEM NAME'] = site_sub_df['SYSTEM NAME'].apply(lambda x: x.strip())
+        #                                                                 ^^^^^^^
+        # AttributeError: 'float' object has no attribute 'strip'
+
         site_sub_df['SYSTEM NAME'] = site_sub_df['SYSTEM NAME'].apply(lambda x: x.strip())         
         print('site_sub_df\n', site_sub_df.columns.tolist(), '\n', site_sub_df.head(10))
         site_sub_df.to_csv('d3_'+SITE_PREP, index=False)  
@@ -463,7 +490,6 @@ def main(args):
         data_df['PWSID'] = data_df['PWSID'].astype(str)
         data_df['PWSID'] = data_df['PWSID'].apply(lambda x: x.strip())        
         data_df['Sample Location'] = data_df['Sample Location'].apply(lambda x: x.strip())
-        data_df['SYSTEM NAME'] = data_df['SYSTEM NAME'].astype(str)
         data_df['SYSTEM NAME'] = data_df['SYSTEM NAME'].apply(lambda x: x.strip())
         print('data_df\n', data_df.columns.tolist(), '\n', data_df.head(4))
         data_df.to_csv('d3_'+DATA_PREP, index=False)
@@ -528,10 +554,14 @@ def main(args):
 def combine_csvs_into_one_df(list_of_files):
     list_of_dfs = []
     for filename in list_of_files:
+        print('--csv Filename:', filename)
         df = pd.read_csv(filename)
-        list_of_dfs.append(df)
+        print('df head', df.head())
+        list_of_dfs.append(df)     
+        print('--growing Length of DataFrame LIST:', len(list_of_dfs))   
     # Combine the DataFrames into one
     combined_df = pd.concat(list_of_dfs, ignore_index=True)
+    print('--Final Length of DataFrame:', len(combined_df), '\n')
     return combined_df
 
 
@@ -567,7 +597,8 @@ def make_df_of_years(filename):
             # Get the first line: *** PWSID = 6430001 | SYSTEM NAME = SCENIC MOBILE HOME PARK***
             first_line = lines[0]  
 
-            print(filename, '(', main_page_index, ')', first_line)
+            if index_page_num % 1000 == 0:
+                print(filename, '(', main_page_index, ')', first_line)
             
             # print('page_text')
             # print(page_text)
