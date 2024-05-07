@@ -34,6 +34,12 @@ If the sample type is E, then loc_epid = epid
 If the sample type is D, then loc_epid = spid
 Other than those two specific associations, the data would have to be considered on a case by case basis . . .
 
+Subsequent information (via email Wed, May 1, 6:51 AM):
+Our system does not track concentration units, so instead our reporting instructions tell the user how to report.  
+ALL data are reported in mg/L with the following exceptions:
+PFAS data are reported in ng/L
+Radiological data are reported in pCi/L
+
 Approach to preparing the data is indicated in the program print statements in the code.
 
 TODO -> IMPORTANT NOTE: IF DECIDE TO USE THIS IN MAPPING, NEED TO:
